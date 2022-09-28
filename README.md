@@ -48,10 +48,10 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_id"></a> [id](#output\_id) | n/a |
-| <a name="output_name"></a> [name](#output\_name) | n/a |
-| <a name="output_root_path"></a> [root\_path](#output\_root\_path) | n/a |
-| <a name="output_storage_account_id"></a> [storage\_account\_id](#output\_storage\_account\_id) | n/a |
+| <a name="output_id"></a> [id](#output\_id) | The ID of the Data Lake Storage Gen2 Filesystem (container ID). |
+| <a name="output_name"></a> [name](#output\_name) | The name of the Data Lake Storage Gen2 Filesystem (container name). |
+| <a name="output_root_path"></a> [root\_path](#output\_root\_path) | The name of the root directory. |
+| <a name="output_storage_account_id"></a> [storage\_account\_id](#output\_storage\_account\_id) | The ID of the Storage Account where the Data Lake Storage Gen2 Filesystem exists. |
 <!-- END_TF_DOCS -->
 
 ## License
