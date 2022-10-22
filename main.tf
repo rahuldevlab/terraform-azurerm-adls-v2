@@ -50,8 +50,8 @@ resource "null_resource" "create_root_folder" {
     build_number = "${timestamp()}${azurerm_storage_data_lake_gen2_filesystem.this.id}"
   }
   provisioner "local-exec" {
-    on_failure = continue
-    command    = "bash ./az_create_folders.sh \"${var.storage_account_name}\" \"${azurerm_storage_data_lake_gen2_filesystem.this.name}\" \"${var.root_dir}\" \"${local.extra_acl}\""
+    on_failure  = continue
+    command     = "bash ./az_create_folders.sh \"${var.storage_account_name}\" \"${azurerm_storage_data_lake_gen2_filesystem.this.name}\" \"${var.root_dir}\" \"${local.extra_acl}\""
     working_dir = path.module
   }
 }
@@ -61,8 +61,8 @@ resource "null_resource" "create_folders" {
     build_number = "${timestamp()}${azurerm_storage_data_lake_gen2_filesystem.this.id}"
   }
   provisioner "local-exec" {
-    on_failure = continue
-    command    = "bash ./az_create_folders.sh \"${var.storage_account_name}\" \"${azurerm_storage_data_lake_gen2_filesystem.this.name}\" \"${local.folders}\" \"${local.extra_acl}\""
+    on_failure  = continue
+    command     = "bash ./az_create_folders.sh \"${var.storage_account_name}\" \"${azurerm_storage_data_lake_gen2_filesystem.this.name}\" \"${local.folders}\" \"${local.extra_acl}\""
     working_dir = path.module
   }
   depends_on = [
