@@ -46,8 +46,10 @@ resource "azurerm_storage_data_lake_gen2_filesystem" "this" {
 }
 
 resource "null_resource" "create_root_folder" {
+  count = var.storage_role_assigned == true ? 0 : 1
   triggers = {
-    build_number = "${timestamp()}${azurerm_storage_data_lake_gen2_filesystem.this.id}"
+    acl_list = local.extra_acl,
+    folder   = var.root_dir
   }
   provisioner "local-exec" {
     on_failure  = continue
@@ -57,8 +59,10 @@ resource "null_resource" "create_root_folder" {
 }
 
 resource "null_resource" "create_folders" {
+  count = var.storage_role_assigned == true ? 0 : 1
   triggers = {
-    build_number = "${timestamp()}${azurerm_storage_data_lake_gen2_filesystem.this.id}"
+    acl_list = local.extra_acl,
+    folder   = var.root_dir
   }
   provisioner "local-exec" {
     on_failure  = continue
@@ -68,4 +72,80 @@ resource "null_resource" "create_folders" {
   depends_on = [
     null_resource.create_root_folder
   ]
+}
+
+resource "azurerm_storage_data_lake_gen2_path" "root" {
+  count = var.storage_role_assigned == true ? 1 : 0
+
+  path               = var.root_dir
+  filesystem_name    = azurerm_storage_data_lake_gen2_filesystem.this.name
+  storage_account_id = var.storage_account_id
+  resource           = "directory"
+
+  dynamic "ace" {
+    for_each = length(var.permissions) == 0 ? [] : [for k in var.permissions : k if contains(keys(k), "group")]
+    content {
+      id          = lookup(var.ad_groups, ace.value["group"], "default")
+      permissions = ace.value["permissions"]
+      scope       = ace.value["scope"]
+      type        = ace.value["type"]
+    }
+  }
+  dynamic "ace" {
+    for_each = length(var.permissions) == 0 ? [] : [for k in var.permissions : k if contains(keys(k), "user")]
+    content {
+      id          = ace.value["user"]
+      permissions = ace.value["permissions"]
+      scope       = ace.value["scope"]
+      type        = ace.value["type"]
+    }
+  }
+  dynamic "ace" {
+    for_each = var.ace_default
+    content {
+      permissions = ace.value["permissions"]
+      scope       = ace.value["scope"]
+      type        = ace.value["type"]
+    }
+  }
+
+  depends_on = [azurerm_storage_data_lake_gen2_filesystem.this]
+}
+
+resource "azurerm_storage_data_lake_gen2_path" "other" {
+  for_each = var.storage_role_assigned == true ? toset(var.folders) : []
+
+  path               = "${var.root_dir}/${each.key}"
+  filesystem_name    = azurerm_storage_data_lake_gen2_filesystem.this.name
+  storage_account_id = var.storage_account_id
+  resource           = "directory"
+
+  dynamic "ace" {
+    for_each = length(var.permissions) == 0 ? [] : [for k in var.permissions : k if contains(keys(k), "group")]
+    content {
+      id          = lookup(var.ad_groups, ace.value["group"], "default")
+      permissions = ace.value["permissions"]
+      scope       = ace.value["scope"]
+      type        = ace.value["type"]
+    }
+  }
+  dynamic "ace" {
+    for_each = length(var.permissions) == 0 ? [] : [for k in var.permissions : k if contains(keys(k), "user")]
+    content {
+      id          = ace.value["user"]
+      permissions = ace.value["permissions"]
+      scope       = ace.value["scope"]
+      type        = ace.value["type"]
+    }
+  }
+  dynamic "ace" {
+    for_each = var.ace_default
+    content {
+      permissions = ace.value["permissions"]
+      scope       = ace.value["scope"]
+      type        = ace.value["type"]
+    }
+  }
+
+  depends_on = [azurerm_storage_data_lake_gen2_path.root]
 }
