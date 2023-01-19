@@ -57,3 +57,9 @@ variable "folders" {
   description = "Name of ADLS folders to create in root directory"
   default     = []
 }
+
+variable "properties" {
+  type        = map(string)
+  description = "Map of properties"
+  default     = {}
+}
