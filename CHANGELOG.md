@@ -1,3 +1,16 @@
+# [1.2.0](https://github.com/data-platform-hq/terraform-azurerm-adls-v2/compare/v1.1.0...v1.2.0) (2023-01-19)
+
+
+### Bug Fixes
+
+* formatting ([15bd705](https://github.com/data-platform-hq/terraform-azurerm-adls-v2/commit/15bd7053d2047010665fa4621a03bf51e9bd5466))
+* formatting ([06f26c7](https://github.com/data-platform-hq/terraform-azurerm-adls-v2/commit/06f26c7732e33d40a0debbff65e565cf9b9196f9))
+
+
+### Features
+
+* added properties parameter ([74c23a5](https://github.com/data-platform-hq/terraform-azurerm-adls-v2/commit/74c23a5995c7492680e31c0733a75695eb97f076))
+
 # [1.1.0](https://github.com/data-platform-hq/terraform-azurerm-adls-v2/compare/v1.0.1...v1.1.0) (2022-12-20)
 
 
