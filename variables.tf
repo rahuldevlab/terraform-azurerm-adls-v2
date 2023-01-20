@@ -34,27 +34,18 @@ variable "ace_default" {
   ]
 }
 
-variable "ad_groups" {
-  type        = map(string)
-  description = "Data which is contain mapping AD group name and GUID"
-  default     = {}
-}
-
 variable "permissions" {
   type        = list(map(string))
   description = "List of ADLS FS permissions"
   default     = [{}]
 }
 
-variable "root_dir" {
-  type        = string
-  description = "Name of ADLS root directory"
-  default     = "data"
-}
-
-variable "folders" {
-  type        = list(any)
-  description = "Name of ADLS folders to create in root directory"
+variable "folders_config" {
+  type = list(object({
+    path        = string
+    permissions = any
+  }))
+  description = "List of ADLS folders configuration to create"
   default     = []
 }
 

@@ -9,30 +9,38 @@ If your Service Principal for Terraform is assigned to **"Storage Blob Data Owne
 Below is an example of module usage, here you are providing users in "_adls_ro_users_" and "_adls_rw_users_" variables. After, passing this map to ADLS module.
 ```hcl
 locals {
-
-  # Read only users
-  adls_ro_users = [
-    "kobe_bryant@gmail.com",
-    "tim_duncan@gmail.com"
-  ] 
-  
-  # Read and Write users
-  adls_rw_users = [
-    "allen_iverson@gmail.com"
-  ] 
-  
-  # Map with user permissions
+  # Map with adls2 file systems configuration
   adls2fs = {
-    "my-data-lake" = concat([
-      for u in local.adls_ro_users : { user = var.user_object_ids[u], permissions = "r-x", scope = "access", type = "user" }
-      ], [
-      for u in local.adls_ro_users : { user = var.user_object_ids[u], permissions = "r-x", scope = "default", type = "user" }
-      ], [
-      for u in local.adls_rw_users : { user = var.user_object_ids[u], permissions = "rwx", scope = "access", type = "user" }
-      ], [
-      for u in local.adls_rw_users : { user = var.user_object_ids[u], permissions = "rwx", scope = "default", type = "user" }
+    "my-data-lake" = {
+      permissions = [
+        { group = "********-****-****-****-************", permissions = "rwx", scope = "access", type = "group" },
+        { group = "********-****-****-****-************", permissions = "---", scope = "default", type = "group" },
+        { group = "********-****-****-****-************", permissions = "rwx", scope = "access", type = "group" },
+        { group = "********-****-****-****-************", permissions = "---", scope = "default", type = "group" }
       ]
-    )
+      folders_config = [
+        {
+          path: "raw",
+          permissions: [
+            { group = "********-****-****-****-************", permissions = "r-x", scope = "access", type = "group" },
+            { user = "********-****-****-****-************", permissions = "rwx", scope = "access", type = "user" },
+            { group = "********-****-****-****-************", permissions = "r-x", scope = "default", type = "group" },
+          ]
+        },
+        {
+          path: "e2e",
+          permissions: [
+            { group = "********-****-****-****-************", permissions = "r-x", scope = "access", type = "group" },
+            { user = "********-****-****-****-************", permissions = "rwx", scope = "access", type = "user" },
+            { group = "********-****-****-****-************", permissions = "r-x", scope = "default", type = "group" }
+          ]
+        },
+        {
+          path: "test",
+          permissions: []
+        }
+      ]
+    }
   }
 }
 
@@ -41,11 +49,14 @@ module "adls" {
   for_each = local.adls2fs
   
   name                  = each.key
-  permissions           = each.value
+  permissions           = each.value.permissions
   storage_role_assigned = true 
-  folders               = ["raw", "refined", "test", "data-product", "e2e"]
+  folders_config        = each.value.folders_config
   storage_account_id    = module.storage_account.id
   storage_account_name  = module.storage_account.name
+  properties            = {
+    env = "Development"
+  }
 }
 ```
 <!-- BEGIN_TF_DOCS -->
@@ -74,8 +85,6 @@ No modules.
 |---------------------------------------------------------------------------------------------------------------------------------------------------------------------|------|
 | [azurerm_storage_data_lake_gen2_filesystem.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_data_lake_gen2_filesystem) | resource |
 | [null_resource.create_folders](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource)                                               | resource |
-| [null_resource.create_root_folder](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource)                                           | resource |
-| [azurerm_storage_data_lake_gen2_path.root](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_data_lake_gen2_path)             | resource |
 | [azurerm_storage_data_lake_gen2_path.other](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_data_lake_gen2_path)            | resource |
 
 ## Inputs
@@ -83,12 +92,10 @@ No modules.
 | Name                                                                                                  | Description                                                                                                                                                             | Type                | Default                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Required |
 |-------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|
 | <a name="input_ace_default"></a> [ace\_default](#input\_ace\_default)                                 | Default ACE values                                                                                                                                                      | `list(map(string))` | <pre>[<br>  {<br>    "permissions": "---",<br>    "scope": "access",<br>    "type": "other"<br>  },<br>  {<br>    "permissions": "---",<br>    "scope": "default",<br>    "type": "other"<br>  },<br>  {<br>    "permissions": "rwx",<br>    "scope": "access",<br>    "type": "group"<br>  },<br>  {<br>    "permissions": "rwx",<br>    "scope": "access",<br>    "type": "mask"<br>  },<br>  {<br>    "permissions": "rwx",<br>    "scope": "access",<br>    "type": "user"<br>  },<br>  {<br>    "permissions": "rwx",<br>    "scope": "default",<br>    "type": "group"<br>  },<br>  {<br>    "permissions": "rwx",<br>    "scope": "default",<br>    "type": "mask"<br>  },<br>  {<br>    "permissions": "rwx",<br>    "scope": "default",<br>    "type": "user"<br>  }<br>]</pre> |    no    |
-| <a name="input_ad_groups"></a> [ad\_groups](#input\_ad\_groups)                                       | Data which is contain mapping AD group name and GUID                                                                                                                    | `map(string)`       | `{}`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |    no    |
-| <a name="input_folders"></a> [folders](#input\_folders)                                               | Name of ADLS folders to create in root directory                                                                                                                        | `list(any)`         | `[]`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |    no    |
+| <a name="input_folders_config"></a> [folders_config](#input\_folders\_config)                         | List of ADLS folders configuration to create                                                                                                                        | `list(object)`      | `[]`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |    no    |
 | <a name="input_storage_role_assigned"></a> [storage\_role\_assigned](#input\_storage\_role\_assigned) | Is Storage Blob Data Owner Role assigned to Terraform Service Principal?  Provides an ability to create File System with bash script(false) or azurerm resources(true). | `bool`              | false                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |    no    |
 | <a name="input_name"></a> [name](#input\_name)                                                        | Name of ADLS FS to create                                                                                                                                               | `string`            | n/a                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |   yes    |
 | <a name="input_permissions"></a> [permissions](#input\_permissions)                                   | List of ADLS FS permissions                                                                                                                                             | `list(map(string))` | <pre>[<br>  {}<br>]</pre>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |    no    |
-| <a name="input_root_dir"></a> [root\_dir](#input\_root\_dir)                                          | Name of ADLS root directory                                                                                                                                             | `string`            | `"data"`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |    no    |
 | <a name="input_storage_account_id"></a> [storage\_account\_id](#input\_storage\_account\_id)          | ID of storage account to create ADLS in                                                                                                                                 | `string`            | n/a                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |   yes    |
 | <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name)    | Name of storage account to create ADLS in                                                                                                                               | `string`            | n/a                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |   yes    |
 | <a name="input_properties"></a> [properties](#input\_properties)                                      | Map of properties                                                                                                                                                       | `map(string)`       | `{}`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |    no    |
@@ -99,7 +106,6 @@ No modules.
 |------|-------------|
 | <a name="output_id"></a> [id](#output\_id) | The ID of the Data Lake Storage Gen2 Filesystem (container ID). |
 | <a name="output_name"></a> [name](#output\_name) | The name of the Data Lake Storage Gen2 Filesystem (container name). |
-| <a name="output_root_path"></a> [root\_path](#output\_root\_path) | The name of the root directory. |
 | <a name="output_storage_account_id"></a> [storage\_account\_id](#output\_storage\_account\_id) | The ID of the Storage Account where the Data Lake Storage Gen2 Filesystem exists. |
 <!-- END_TF_DOCS -->
 
