@@ -41,7 +41,7 @@ variable "permissions" {
 }
 
 variable "folders_config" {
-  type        = list(object({
+  type = list(object({
     path        = string
     permissions = any
   }))

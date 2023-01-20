@@ -1,7 +1,7 @@
 locals {
   folders_config = {
-    for folder in var.folders_config: folder.path => {
-      permissions_string: format(",%s", join(",", concat(
+    for folder in var.folders_config : folder.path => {
+      permissions_string : format(",%s", join(",", concat(
         [for v in [for k in folder.permissions : k if(contains(keys(k), "user") && k["scope"] == "access")] : "${v.type}:${v.user}:${v.permissions}"],
         [for v in [for k in folder.permissions : k if(contains(keys(k), "group") && k["scope"] == "access")] : "${v.type}:${v.group}:${v.permissions}"],
         [for v in [for k in folder.permissions : k if(contains(keys(k), "user") && k["scope"] == "default")] : "default:${v.type}:${v.user}:${v.permissions}"]
@@ -49,7 +49,7 @@ resource "azurerm_storage_data_lake_gen2_filesystem" "this" {
 
 resource "null_resource" "create_folders" {
   for_each = var.storage_role_assigned == true ? {} : {
-    for folder in var.folders_config: replace(folder.path, "/", "-") => folder
+    for folder in var.folders_config : replace(folder.path, "/", "-") => folder
   }
   triggers = {
     acl_list = local.folders_config[each.value.path].permissions_string,
@@ -64,7 +64,7 @@ resource "null_resource" "create_folders" {
 
 resource "azurerm_storage_data_lake_gen2_path" "other" {
   for_each = var.storage_role_assigned == true ? {
-    for folder in var.folders_config: replace(folder.path, "/", "-") => folder
+    for folder in var.folders_config : replace(folder.path, "/", "-") => folder
   } : {}
 
   path               = each.value.path
