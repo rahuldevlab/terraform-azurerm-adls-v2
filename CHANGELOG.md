@@ -1,3 +1,15 @@
+# [1.3.0](https://github.com/data-platform-hq/terraform-azurerm-adls-v2/compare/v1.2.0...v1.3.0) (2023-01-20)
+
+
+### Bug Fixes
+
+* formatting ([489f1d5](https://github.com/data-platform-hq/terraform-azurerm-adls-v2/commit/489f1d5027d7d9f33b98f4a30712374f67c39512))
+
+
+### Features
+
+* refactored the module to support different permissions for each folder ([af6e763](https://github.com/data-platform-hq/terraform-azurerm-adls-v2/commit/af6e7637ab593d5db759c2c88d34ac5f3821718f))
+
 # [1.2.0](https://github.com/data-platform-hq/terraform-azurerm-adls-v2/compare/v1.1.0...v1.2.0) (2023-01-19)
 
 
