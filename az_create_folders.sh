@@ -4,11 +4,6 @@ FS_NAME=$2
 FOLDERS_LIST=$3
 EXTRA_ACL=$4
 
-#echo ${ACCOUNT_NAME}
-#echo ${FS_NAME}
-#echo ${FOLDERS_LIST}
-#echo ${EXTRA_ACL}
-
 for dir in ${FOLDERS_LIST//,/ };do
   if [ "$(az storage fs directory exists --account-name ${ACCOUNT_NAME} --file-system ${FS_NAME} --name "/${dir}" --only-show-errors | jq -r .exists | tr -d '\n')" = "false" ] ;then
     echo "Folder ${dir} already exists"
