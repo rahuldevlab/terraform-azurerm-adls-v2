@@ -16,6 +16,8 @@ resource "azurerm_storage_data_lake_gen2_filesystem" "this" {
   properties = {
     for key, value in var.properties : key => base64encode(value)
   }
+  is_hns_enabled = var.is_hns_enabled
+
 
   lifecycle { prevent_destroy = false }
 
