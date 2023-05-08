@@ -54,3 +54,8 @@ variable "properties" {
   description = "Map of properties"
   default     = {}
 }
+variable "is_hns_enabled" {
+    description = "(Optional) - This input variable contains the is_hns_enabled"
+    type        = bool
+    default     = false  
+}
